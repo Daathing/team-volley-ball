@@ -1,0 +1,210 @@
+    <!DOCTYPE html>
+        <html lang="en">
+            <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Répartition d'équipe</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 40px;
+            background-color: #f7f7f7;
+            color: #333;
+        }
+        button {
+            padding: 12px 20px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: background 0.3s ease;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        div#results {
+            margin-top: 30px;
+        }
+        h3 {
+            color: #2c3e50;
+            border-bottom: 3px solid #3498db;
+            padding-bottom: 5px;
+            margin-top: 40px;
+        }
+        ul {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 5px;
+            list-style-type: none;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        ul li {
+            padding: 10px 0;
+            border-bottom: 1px solid #ecf0f1;
+        }
+        ul li:last-child {
+            border-bottom: none;
+        }
+        .player-list label {
+            display: inline-block;
+            margin-right: 20px;
+            margin-bottom: 10px;
+            cursor: pointer;
+        }
+        .player-list input[type="checkbox"] {
+            margin-right: 7px;
+        }
+        .filter {
+            margin-top: 20px;
+            margin-bottom: 20px;
+        }
+        .filter label {
+            display: inline-block;
+            margin-right: 20px;
+        }
+button#toggleAll {
+    margin-bottom: 20px;
+}
+    </style>
+</head>
+<body>
+
+    <label for="number">Entrez un nombre total de joueurs (entre 0 et 45): </label>
+    <input type="number" id="number" min="0" max="45">
+    
+    <label for="teams">Nombre d'équipes (entre 2 et 8): </label>
+    <input type="number" id="teams" min="2" max="8">
+    
+    <div class="filter">
+        <label><input type="checkbox" id="parity"> Parité</label>
+        <label><input type="checkbox" id="girlsOnly"> Seulement des filles</label>
+        <label><input type="checkbox" id="boysOnly"> Seulement des garçons</label>
+    </div>
+    
+    <div class="player-list">
+        <h3>Liste des joueurs :</h3>
+        <button id="toggleAll" onclick="toggleAllCheckboxes()">Cocher/Décocher tous</button>
+        <div id="players"></div>
+    </div>
+    
+    <button onclick="generateTeams()">Répartir</button>
+    
+    <div id="results"></div>
+
+    <script>
+        let givenNames = [
+            { name: 'Kilian', gender: 'Garçon' },
+            { name: 'Joris', gender: 'Garçon' },
+            { name: 'Alexandra', gender: 'Fille' },
+            { name: 'Alix', gender: 'Fille' },
+            { name: 'Julien', gender: 'Garçon' },
+            { name: 'Julie T', gender: 'Fille' },
+            { name: 'Virginie', gender: 'Fille' },
+            { name: 'Alizée', gender: 'Fille' },
+            { name: 'Amanda', gender: 'Fille' },
+            { name: 'Arnaud', gender: 'Garçon' },
+            { name: 'Benjamin', gender: 'Garçon' },
+            { name: 'Sebastien', gender: 'Garçon' },
+            { name: 'Enisa', gender: 'Fille' },
+            { name: 'Ewa', gender: 'Fille' },
+            { name: 'Francesco', gender: 'Garçon' },
+            { name: 'François', gender: 'Garçon' },
+            { name: 'Jade', gender: 'Fille' },
+            { name: 'Jérôme', gender: 'Garçon' },
+            { name: 'Julie', gender: 'Fille' },
+            { name: 'Malo', gender: 'Garçon' },
+            { name: 'Manuella', gender: 'Fille' },
+            { name: 'Maureen', gender: 'Fille' },
+            { name: 'Nicolas', gender: 'Garçon' },
+            { name: 'Philippe', gender: 'Garçon' },
+            { name: 'Victor', gender: 'Garçon' },
+        ];
+        
+        const playersDiv = document.getElementById('players');
+        
+        givenNames.forEach(member => {
+            let playerLabel = document.createElement('label');
+            let playerCheckbox = document.createElement('input');
+            playerCheckbox.type = 'checkbox';
+            playerCheckbox.checked = true;
+            playerCheckbox.value = member.name;
+            playerCheckbox.className = 'player-checkbox';
+            
+            playerLabel.appendChild(playerCheckbox);
+            playerLabel.innerHTML += member.name;
+            
+            playersDiv.appendChild(playerLabel);
+        });
+
+        function toggleAllCheckboxes() {
+            const checkboxes = document.querySelectorAll('.player-checkbox');
+            const allChecked = Array.from(checkboxes).every(checkbox => checkbox.checked);
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = !allChecked;
+            });
+        }
+
+function generateTeams() {
+    const number = parseInt(document.getElementById('number').value);
+    const teams = parseInt(document.getElementById('teams').value);
+    const resultsDiv = document.getElementById('results');
+
+    let presentMembers = [];
+    document.querySelectorAll('.player-checkbox:checked').forEach(checkbox => {
+        const member = givenNames.find(m => m.name === checkbox.value);
+        if (member) presentMembers.push(member);
+    });
+
+    let girlsOnlyTeam = [];
+    let boysOnlyTeam = [];
+    if (document.getElementById('girlsOnly').checked) {
+        while (girlsOnlyTeam.length < 6 && presentMembers.some(m => m.gender === 'Fille')) {
+            let girl = presentMembers.find(m => m.gender === 'Fille');
+            girlsOnlyTeam.push(girl.name);
+            presentMembers.splice(presentMembers.indexOf(girl), 1);
+        }
+    }
+
+    if (document.getElementById('boysOnly').checked) {
+        while (boysOnlyTeam.length < 6 && presentMembers.some(m => m.gender === 'Garçon')) {
+            let boy = presentMembers.find(m => m.gender === 'Garçon');
+            boysOnlyTeam.push(boy.name);
+            presentMembers.splice(presentMembers.indexOf(boy), 1);
+        }
+    }
+
+    presentMembers.sort(() => Math.random() - 0.5);
+
+    let teamsArray = Array.from({ length: teams }, () => []);
+
+    for (let i = 0; i < presentMembers.length; i++) {
+        teamsArray[i % teams].push(presentMembers[i].name);
+    }
+
+    // Si le nombre de joueurs demandé est supérieur au nombre de membres présents, ajouter des joueurs invités.
+    let currentTotal = presentMembers.length;
+    while (currentTotal < number) {
+        let teamIndex = currentTotal % teams;
+        teamsArray[teamIndex].push('Joueur invité ' + (currentTotal - presentMembers.length + 1));
+        currentTotal++;
+    }
+
+    if (girlsOnlyTeam.length) teamsArray.push(girlsOnlyTeam);
+    if (boysOnlyTeam.length) teamsArray.push(boysOnlyTeam);
+
+    let html = '';
+    teamsArray.forEach((team, index) => {
+        html += `<h3>Équipe ${index + 1}</h3><ul>`;
+        team.forEach(memberName => {
+            html += `<li>${memberName}</li>`;
+        });
+        html += '</ul>';
+    });
+
+    resultsDiv.innerHTML = html;
+}
+</script>
+</body>
+</html>
